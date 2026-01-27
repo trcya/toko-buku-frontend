@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toko Buku PKL - Full CRUD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+
+    <div class="max-w-5xl mx-auto py-10 px-4">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-blue-600 mb-2">Sistem Informasi Buku</h1>
+            <p class="text-gray-500">Node.js + PostgreSQL + Tailwind CSS</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-10">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Tambah Buku</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Judul Buku</label>
+                            <input type="text" id="judul" placeholder="Contoh: Belajar Coding" 
+                                class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Penulis</label>
+                            <input type="text" id="penulis" placeholder="Nama penulis" 
+                                class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                        <button onclick="tambahBuku()" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 transition active:scale-95">
+                            Simpan Ke Database
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 border-b border-gray-100">
+                            <tr>
+                                <th class="p-4 text-sm font-semibold text-gray-600">ID</th>
+                                <th class="p-4 text-sm font-semibold text-gray-600">Judul</th>
+                                <th class="p-4 text-sm font-semibold text-gray-600">Penulis</th>
+                                <th class="p-4 text-sm font-semibold text-gray-600 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-buku" class="divide-y divide-gray-50">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
