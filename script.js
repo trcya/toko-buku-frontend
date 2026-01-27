@@ -1,91 +1,95 @@
-const API_URL = 'http://localhost:3000/buku';
+const API_URL = "http://localhost:3000";
 
-// 1. Ambil & Tampilkan Data
-async function ambilBuku() {
-    const respon = await fetch(API_URL);
-    const data = await respon.json();
-    const tabel = document.getElementById('tabel-buku');
-    tabel.innerHTML = '';
-    
-    data.forEach(buku => {
-        tabel.innerHTML += `
-            <tr class="hover:bg-gray-50 border-b">
-                <td class="p-4 text-blue-600 font-mono">#${buku.id}</td>
-                <td class="p-4 font-medium">${buku.judul}</td>
-                <td class="p-4 text-gray-600">${buku.penulis}</td>
-                <td class="p-4 flex gap-2 justify-center">
-                    <button onclick="siapkanEdit(${buku.id}, '${buku.judul}', '${buku.penulis}')" 
-                        class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded-lg text-sm transition">Edit</button>
-                    <button onclick="hapusBuku(${buku.id})" 
-                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition">Hapus</button>
-                </td>
-            </tr>`;
+// Load data saat halaman dibuka
+document.addEventListener("DOMContentLoaded", loadBuku);
+
+function loadBuku() {
+  fetch(`${API_URL}/buku`)
+    .then(res => res.json())
+    .then(data => {
+      const tbody = document.getElementById("tabel-buku");
+      tbody.innerHTML = "";
+
+      data.forEach(buku => {
+        tbody.innerHTML += `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-4 font-mono text-gray-500">#${buku.id}</td>
+            <td class="p-4 font-bold">${buku.judul}</td>
+            <td class="p-4">${buku.penulis}</td>
+            <td class="p-4 text-center">
+              <button onclick="editBuku(${buku.id}, '${buku.judul}', '${buku.penulis}')"
+                class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg mr-2 transition">
+                Edit
+              </button>
+              <button onclick="hapusBuku(${buku.id})"
+                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition">
+                Hapus
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    })
+    .catch(err => {
+      console.error(err);
     });
 }
 
-// 2. Tambah / Simpan Data
-async function tambahBuku() {
-    const judul = document.getElementById('judul').value;
-    const penulis = document.getElementById('penulis').value;
-    if (!judul || !penulis) return alert("Isi semua data!");
+// Fungsi Tambah Buku
+function tambahBuku() {
+  const judul = document.getElementById("judul").value;
+  const penulis = document.getElementById("penulis").value;
 
-    await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ judul, penulis })
-    });
+  if (!judul || !penulis) {
+    alert("Judul dan penulis wajib diisi!");
+    return;
+  }
 
-    bersihkanInput();
-    ambilBuku();
+  fetch(`${API_URL}/buku`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ judul, penulis })
+  })
+  .then(res => res.json())
+  .then(() => {
+    document.getElementById("judul").value = "";
+    document.getElementById("penulis").value = "";
+    loadBuku();
+  })
+  .catch(err => alert("Gagal menambah buku"));
 }
 
-// 3. Hapus Data dengan Notifikasi
-async function hapusBuku(id) {
-    if (confirm("Apakah Anda yakin ingin menghapus buku ini secara permanen?")) {
-        try {
-            const respon = await fetch(`${API_URL}/${id}`, { 
-                method: 'DELETE' 
-            });
+// Fungsi Edit Buku (Fitur Baru)
+function editBuku(id, judulLama, penulisLama) {
+  const judulBaru = prompt("Ubah Judul Buku:", judulLama);
+  const penulisBaru = prompt("Ubah Nama Penulis:", penulisLama);
 
-            if (respon.ok) {
-                console.log(`Buku ID ${id} terhapus`);
-                ambilBuku(); // Refresh tabel
-            } else {
-                const errorData = await respon.json();
-                alert("Gagal menghapus: " + errorData.message);
-            }
-        } catch (error) {
-            console.error("Koneksi gagal:", error);
-            alert("Tidak dapat terhubung ke server.");
-        }
-    }
+  // Jika user mengisi kedua kolom dan tidak menekan 'Cancel'
+  if (judulBaru && penulisBaru) {
+    fetch(`${API_URL}/buku/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ judul: judulBaru, penulis: penulisBaru })
+    })
+    .then(res => {
+      if (res.ok) {
+        alert("Buku berhasil diperbarui!");
+        loadBuku();
+      } else {
+        alert("Gagal memperbarui buku.");
+      }
+    })
+    .catch(err => console.error(err));
+  }
 }
 
-// 4. Logika Edit dengan Validasi
-async function siapkanEdit(id, judulLama, penulisLama) {
-    const judulBaru = prompt("Edit Judul Buku:", judulLama);
-    const penulisBaru = prompt("Edit Nama Penulis:", penulisLama);
-    
-    // Pastikan user tidak mengosongkan input atau menekan cancel
-    if (judulBaru !== null && penulisBaru !== null) {
-        if (judulBaru.trim() === "" || penulisBaru.trim() === "") {
-            return alert("Judul dan Penulis tidak boleh kosong!");
-        }
+// Fungsi Hapus Buku
+function hapusBuku(id) {
+  if (!confirm("Yakin ingin menghapus buku ini?")) return;
 
-        try {
-            const respon = await fetch(`${API_URL}/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ judul: judulBaru, penulis: penulisBaru })
-            });
-
-            if (respon.ok) {
-                ambilBuku();
-            } else {
-                alert("Gagal memperbarui data.");
-            }
-        } catch (error) {
-            alert("Terjadi kesalahan koneksi.");
-        }
-    }
+  fetch(`${API_URL}/buku/${id}`, {
+    method: "DELETE"
+  })
+  .then(() => loadBuku())
+  .catch(err => alert("Gagal menghapus buku"));
 }
