@@ -10,19 +10,20 @@ function loadBuku() {
       const tbody = document.getElementById("tabel-buku");
       tbody.innerHTML = "";
 
-      data.forEach(buku => {
+      // Menggunakan (buku, index) agar ID di tabel urut 1, 2, 3...
+      data.forEach((buku, index) => {
         tbody.innerHTML += `
-          <tr class="border-b hover:bg-gray-50">
-            <td class="p-4 font-mono text-gray-500">#${buku.id}</td>
-            <td class="p-4 font-bold">${buku.judul}</td>
-            <td class="p-4">${buku.penulis}</td>
+          <tr class="border-b border-gray-100 hover:bg-blue-50/50 transition-all duration-300">
+            <td class="p-4 font-bold text-blue-600">#${index + 1}</td>
+            <td class="p-4 font-bold text-gray-800">${buku.judul}</td>
+            <td class="p-4 text-gray-600">${buku.penulis}</td>
             <td class="p-4 text-center">
               <button onclick="editBuku(${buku.id}, '${buku.judul}', '${buku.penulis}')"
-                class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg mr-2 transition">
+                class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 rounded-xl mr-2 transition active:scale-90 shadow-md">
                 Edit
               </button>
               <button onclick="hapusBuku(${buku.id})"
-                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition">
+                class="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-xl transition active:scale-90 shadow-md">
                 Hapus
               </button>
             </td>
@@ -31,7 +32,7 @@ function loadBuku() {
       });
     })
     .catch(err => {
-      console.error(err);
+      console.error("Gagal memuat data:", err);
     });
 }
 
@@ -54,42 +55,73 @@ function tambahBuku() {
   .then(() => {
     document.getElementById("judul").value = "";
     document.getElementById("penulis").value = "";
-    loadBuku();
+    loadBuku(); // Refresh tabel
   })
   .catch(err => alert("Gagal menambah buku"));
 }
 
-// Fungsi Edit Buku (Fitur Baru)
-function editBuku(id, judulLama, penulisLama) {
-  const judulBaru = prompt("Ubah Judul Buku:", judulLama);
-  const penulisBaru = prompt("Ubah Nama Penulis:", penulisLama);
-
-  // Jika user mengisi kedua kolom dan tidak menekan 'Cancel'
-  if (judulBaru && penulisBaru) {
-    fetch(`${API_URL}/buku/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ judul: judulBaru, penulis: penulisBaru })
-    })
-    .then(res => {
-      if (res.ok) {
-        alert("Buku berhasil diperbarui!");
-        loadBuku();
-      } else {
-        alert("Gagal memperbarui buku.");
-      }
-    })
-    .catch(err => console.error(err));
-  }
+// Fungsi Hapus Buku dengan SweetAlert2 (Tampilan Menarik)
+function hapusBuku(id) {
+    Swal.fire({
+        title: 'Konfirmasi Hapus',
+        text: "Yakin ingin menghapus buku ini dari database?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444', // Merah Tailwind
+        cancelButtonColor: '#1e3a8a',  // Biru Gelap
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal',
+        background: '#ffffff',
+        borderRadius: '20px',
+        showClass: { popup: 'animate__animated animate__fadeInDown' }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`${API_URL}/buku/${id}`, { method: "DELETE" })
+            .then(() => {
+                Swal.fire({
+                    title: 'Terhapus!',
+                    text: 'Buku telah berhasil dihapus.',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                loadBuku();
+            })
+            .catch(err => Swal.fire('Error', 'Gagal menghapus buku', 'error'));
+        }
+    });
 }
 
-// Fungsi Hapus Buku
-function hapusBuku(id) {
-  if (!confirm("Yakin ingin menghapus buku ini?")) return;
+// Fungsi Edit Buku dengan SweetAlert2 (Tampilan Menarik)
+async function editBuku(id, judulLama, penulisLama) {
+    const { value: formValues } = await Swal.fire({
+        title: 'Edit Informasi Buku',
+        html:
+            `<input id="swal-input1" class="swal2-input" placeholder="Judul" value="${judulLama}">` +
+            `<input id="swal-input2" class="swal2-input" placeholder="Penulis" value="${penulisLama}">`,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Simpan Perubahan',
+        confirmButtonColor: '#2563eb',
+        preConfirm: () => {
+            return [
+                document.getElementById('swal-input1').value,
+                document.getElementById('swal-input2').value
+            ]
+        }
+    });
 
-  fetch(`${API_URL}/buku/${id}`, {
-    method: "DELETE"
-  })
-  .then(() => loadBuku())
-  .catch(err => alert("Gagal menghapus buku"));
+    if (formValues && formValues[0] && formValues[1]) {
+        fetch(`${API_URL}/buku/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ judul: formValues[0], penulis: formValues[1] })
+        })
+        .then(res => {
+            if (res.ok) {
+                Swal.fire({ icon: 'success', title: 'Berhasil!', timer: 1000, showConfirmButton: false });
+                loadBuku();
+            }
+        });
+    }
 }
