@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:3000";
+// GANTI KE URL BACKEND VERCEL KAMU
+// Catatan: Jangan tambahkan tanda '/' di akhir URL
+const API_URL = "https://toko-buku-backend-terecyas-projects.vercel.app"; 
 
 // Load data saat halaman dibuka
 document.addEventListener("DOMContentLoaded", loadBuku);
@@ -10,7 +12,6 @@ function loadBuku() {
       const tbody = document.getElementById("tabel-buku");
       tbody.innerHTML = "";
 
-      // Menggunakan (buku, index) agar ID di tabel urut 1, 2, 3...
       data.forEach((buku, index) => {
         tbody.innerHTML += `
           <tr class="border-b border-gray-100 hover:bg-blue-50/50 transition-all duration-300">
@@ -42,7 +43,7 @@ function tambahBuku() {
   const penulis = document.getElementById("penulis").value;
 
   if (!judul || !penulis) {
-    alert("Judul dan penulis wajib diisi!");
+    Swal.fire('Oops!', 'Judul dan penulis wajib diisi!', 'warning');
     return;
   }
 
@@ -55,36 +56,29 @@ function tambahBuku() {
   .then(() => {
     document.getElementById("judul").value = "";
     document.getElementById("penulis").value = "";
-    loadBuku(); // Refresh tabel
+    loadBuku();
+    Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Buku ditambahkan', timer: 1500, showConfirmButton: false });
   })
-  .catch(err => alert("Gagal menambah buku"));
+  .catch(err => Swal.fire('Error', 'Gagal menambah buku. Pastikan backend aktif!', 'error'));
 }
 
-// Fungsi Hapus Buku dengan SweetAlert2 (Tampilan Menarik)
+// Fungsi Hapus Buku
 function hapusBuku(id) {
     Swal.fire({
         title: 'Konfirmasi Hapus',
         text: "Yakin ingin menghapus buku ini dari database?",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#ef4444', // Merah Tailwind
-        cancelButtonColor: '#1e3a8a',  // Biru Gelap
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#1e3a8a',
         confirmButtonText: 'Ya, Hapus!',
         cancelButtonText: 'Batal',
-        background: '#ffffff',
-        borderRadius: '20px',
-        showClass: { popup: 'animate__animated animate__fadeInDown' }
+        borderRadius: '20px'
     }).then((result) => {
         if (result.isConfirmed) {
             fetch(`${API_URL}/buku/${id}`, { method: "DELETE" })
             .then(() => {
-                Swal.fire({
-                    title: 'Terhapus!',
-                    text: 'Buku telah berhasil dihapus.',
-                    icon: 'success',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
+                Swal.fire({ title: 'Terhapus!', icon: 'success', timer: 1500, showConfirmButton: false });
                 loadBuku();
             })
             .catch(err => Swal.fire('Error', 'Gagal menghapus buku', 'error'));
@@ -92,7 +86,7 @@ function hapusBuku(id) {
     });
 }
 
-// Fungsi Edit Buku dengan SweetAlert2 (Tampilan Menarik)
+// Fungsi Edit Buku
 async function editBuku(id, judulLama, penulisLama) {
     const { value: formValues } = await Swal.fire({
         title: 'Edit Informasi Buku',
