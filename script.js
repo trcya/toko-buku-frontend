@@ -1,7 +1,7 @@
 // GANTI link di bawah ini dengan URL backend Vercel kamu yang asli
 // Contoh: https://toko-buku-backend-terecyas-projects.vercel.app
-const API_URL = "toko-buku-backend-jxh06ell8-terecyas-projects.vercel.app";
-
+// Pastikan link ini adalah link Vercel kamu, BUKAN localhost
+const API_URL = "https://toko-buku-backend-terecyas-projects.vercel.app";
 // Load data saat halaman dibuka
 document.addEventListener("DOMContentLoaded", loadBuku);
 
